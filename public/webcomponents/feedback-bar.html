@@ -1,0 +1,555 @@
+<template id="tpl-feedback-box">
+  <style>
+    .feedback-box{
+      background-color: hsla(70,30%,82%,0.8);
+      border-radius: 9px;
+      border: 1px solid hsla(70,30%,40%,0.8);
+      box-shadow: 0 1px 2px 1px hsla(70,50%,10%,0.2);
+      box-sizing: border-box;
+      left: calc( 50vw - 24px);
+      min-height: 48px;
+      min-width: 48px;
+      position: absolute;
+      /* top: calc( 50vh - 24px); */
+      top: 0;
+    }
+    .arrow{
+      color: hsla(70,15%,25%,1);
+      display: block;
+      font-size: 36px;
+      line-height: 100%;
+      margin: 4px auto 0;
+      text-align: center;
+      transition: transform 0.2s;
+      user-select: none;
+    }
+    textarea{
+      background-color: hsla( 70, 30%, 95%, 0.7);
+      border-radius: 9px;
+      border: 1px solid hsla(70,30%,40%,0.8);
+      box-shadow: 0 1px 2px 1px hsla(0,50%,0%,0.2);
+      box-sizing: border-box;
+      color: hsla(70,15%,25%,1);
+      left: 0;
+      min-height: 72px;
+      overflow: hidden;
+      /* padding: 24px 24px 32px; */
+      padding: 32px 32px 32px;
+
+      position: absolute;
+      resize: none;
+      top: 0;
+      transtion: top 1s;
+      z-index: -1;
+    }
+    .feedback-box-wrapper{
+      z-index: 11;
+      position: absolute;
+    }
+  </style>
+  <div class="feedback-box-wrapper">
+    <div class="feedback-box btn" draggable="true">
+      <!-- <div class="close">&times;</div> -->
+      <div class="arrow btn">⇧</div>
+      <textarea rows="1"></textarea>
+    </div>
+  </div>
+</template>
+
+<script>
+  class FeedbackBox extends HTMLElement{
+    constructor(){
+      super()
+      const el = document.querySelector('#tpl-feedback-box')
+              .content.cloneNode( true )
+      this.attachShadow({mode:'open'}).appendChild( el )
+      this.eventListeners = new Map()
+      this.parentBar = document.querySelector("feedback-bar")
+
+      this.angle = 0;
+      this.button = this.shadowRoot.querySelector('.feedback-box')
+      this.textarea = this.button.querySelector('textarea')
+      this.arrow = this.button.querySelector('.arrow')
+      // this.fixTextPosition()
+    }
+    connectedCallback( e ){
+      this.eventListeners.set( this.textarea, {
+          'keyup': this.adjustTextArea.bind(this),
+          'mouseenter': function(){this.textarea.parentNode.setAttribute("draggable", false) }.bind(this),
+          'mouseleave': function(){this.textarea.parentNode.setAttribute("draggable", true) }.bind(this),
+      })
+      this.eventListeners.set( this.button, {
+          'click': this.rotateArrow.bind(this),
+          'dragstart': this.parentBar.showLimits.bind( this.parentBar ),
+          'dragend': function( e ){
+                        (this.buttonDragEnd.bind(this))( e )
+                        this.parentBar.hideLimits()
+                      }.bind(this),
+          'touchmove': function( e ){
+                          (this.buttonTouchMove.bind(this))( e )
+                          this.parentBar.showLimits()
+                        }.bind(this),
+          'touchend': this.parentBar.hideLimits
+      })
+      this.addEventListeners()
+
+      this.button.style.top = `${document.documentElement.scrollTop+window.innerHeight/2-48}px`;
+      this.adjustTextArea()
+    }
+    addEventListeners(){
+      for( let [domElement, eventListenersDict] of this.eventListeners ){
+        Object.keys( eventListenersDict ).forEach( eventName => {
+          domElement.addEventListener( eventName, eventListenersDict[eventName], {passive: true} )
+        })
+      }
+    }
+    textAreaAutoResize( e ){
+      this.textarea.style.height = '0px'
+      this.textarea.style.height = (this.textarea.scrollHeight)+'px'
+    }
+    rotateArrow( e ){
+      if( e.target && e.target.classList.contains('btn')) {
+        e.stopPropagation()
+        this.angle += 45
+        this.arrow.style.cssText = `transform: rotate(${ this.angle }deg)`
+      }
+      this.adjustTextArea()
+    }
+    buttonDragEnd( e ){
+      let offset = 48
+      this.button.style.top = `${e.pageY-offset/2}px`
+      this.button.style.left = `${e.pageX-offset/2}px`
+      this.adjustTextArea()
+      this.checkRemove( e.clientX-offset/2, e.clientY-offset  )
+    }
+    buttonTouchMove( e ){
+      if( e.path.includes(this.textarea))
+        return false
+      this.button.style.left = `${e.touches[0].pageX-24}px`
+      this.button.style.top = `${e.touches[0].pageY-24}px`
+      this.checkRemove( e.touches[0].clientX-24, e.touches[0].clientY-24 )
+    }
+    checkRemove( posX, posY ){
+      let innerLimit = 12
+      let isOutside = posX < innerLimit
+                      || posY < innerLimit -24
+                      || posX > (window.innerWidth -48 - innerLimit)
+                      || posY > (window.innerHeight -72 - innerLimit)
+      if( isOutside )
+        this.deleteMe()
+    }
+    fixTextPosition(){
+      let angle = +this.angle%360
+      let textWidth = this.textarea.offsetWidth
+      let textHeight = this.textarea.offsetHeight
+      let btnWidth = this.button.offsetWidth
+      let btnHeight = this.button.offsetHeight
+      let pos
+
+      switch( angle ){
+        case 0:
+          pos = { left: -textWidth/2 + btnWidth/2, top:  btnHeight/2 }
+          break;
+        case 45:
+          pos = { left: -textWidth + btnWidth/2, top: btnHeight/2 }
+          break;
+        case 90:
+          pos = { left: -textWidth + btnWidth/2, top: -textHeight/2 + btnHeight/2 }
+          break;
+        case 135:
+          pos = { left: -textWidth + btnWidth/2, top: -textHeight + btnHeight/2 }
+          break;
+        case 180:
+          pos = { left: -textWidth/2 + btnWidth/2, top: -textHeight + btnHeight/2 }
+          break;
+        case 225:
+          pos = { left: btnWidth/2, top: -textHeight + btnHeight/2 }
+          break;
+        case 270:
+          pos = { left: btnWidth/2, top: -textHeight/2 + btnHeight/2 }
+          break;
+        case 315:
+          pos = { left: btnWidth/2, top: btnHeight/2 }
+          break;
+      }
+
+      let css = `top: ${ pos.top }px; left: ${ pos.left }px;`
+      this.textarea.style.cssText = css
+
+      // Prevents the box from extending beyond the document.
+      let textRect = this.textarea.getBoundingClientRect()
+      if( textRect.left < 0 )
+        pos.left -= textRect.left
+      else if( textRect.right > window.innerWidth )
+        pos.left -= textRect.right - window.innerWidth
+      if( textRect.top < 0 )
+        pos.top -= textRect.top
+
+      css = `top: ${ pos.top }px; left: ${ pos.left }px;`
+
+      this.textarea.style.cssText = css
+    }
+    adjustTextArea(){
+      this.fixTextPosition()
+      this.textAreaAutoResize()
+    }
+    deleteMe(){
+      // this.textarea.removeEventListener('keyup', this.adjustTextArea.bind(this))
+      for (let [key, value] of this.eventListeners){
+        Object.keys( value ).forEach( eventName =>{
+          key.removeEventListener( eventName, value[eventName])
+        })
+      }
+      this.eventListeners.delete( this )
+      this.remove()
+    }
+    // Export relevant data as a JSON string
+    exportData(){
+      let data = {
+        text: this.textarea.value,
+        pos: {
+          left: this.button.style.left,
+          top: this.button.style.top
+        },
+        angle: this.angle%360
+      }
+      return data
+    }
+    importData( data ){
+      this.textarea.value = data.text
+      this.button.style.left = data.pos.left
+      this.button.style.top = data.pos.top
+      this.angle = data.angle
+      this.arrow.style.cssText = `transform: rotate(${ data.angle }deg)`
+      this.adjustTextArea()
+    }
+  }
+  customElements.define( 'feedback-box', FeedbackBox )
+</script>
+
+
+
+
+
+
+<template id="tpl-feedback-bar">
+  <style>
+    aside{
+      min-height: 48px;
+      width: 100%;
+      background-color: hsla(0, 50%, 6%, 1);
+      display: inline-block;
+      box-shadow: inset 0 4px 12px -2px hsla(0, 50%, 0%, 0.8);
+      display: inline-flex;
+      flex-flow: row wrap;
+      justify-content: center;
+      overflow: hidden;
+      transition: max-height 0.4s;
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+    }
+    button{
+      min-width: 160px;
+      min-height: 48px;
+      background-color: transparent;
+      border: none;
+      text-transform: uppercase;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    button:before{
+      content: "";
+      border-left: 1px solid hsla(0,50%,70%, 0.2);
+      height: 30px;
+      bottom: 9px;
+      left: 0;
+      position: absolute;
+    }
+    button:last-of-type:after{
+      content: "";
+      border-left: 1px solid hsla(0,50%,70%, 0.2);
+      height: 30px;
+      bottom: 9px;
+      right: 0;
+      position: absolute;
+    }
+    .icon{
+      background-color: hsla(0, 50%, 100%, .2);
+      box-sizing: border-box;
+      display: inline-block;
+      min-height: 12px;
+      min-width: 32px;
+      opacity: .25;
+    }
+    label{
+      color: hsla(0,50%,70%, 0.7);
+      font-size: 12px;
+      margin-left: 6px;
+      text-align: left;
+    }
+    @media (max-width:750px){
+      .icon{
+        display: inline-block;
+        height: 2px;
+        margin-bottom: 3px;
+        min-height: 2px;
+        text-align: center;
+        width: 70%;
+      }
+      button{
+        cursor: pointer;
+        flex-direction: column;
+        padding: 12px 8px 8px 8px;
+        text-align: center;
+      }
+      label{
+        cursor: pointer;
+        display: inline-block;
+        font-size: 10px;
+        margin-left: 0;
+        min-width: 120px;
+        text-align: center;
+      }
+    }
+    @media (max-width: 500px){
+      button{
+        padding: 12px 4px 8px 4px;
+        min-width: 80px;
+      }
+      label{
+        min-width: 80px;
+      }
+    }
+    .hidden{
+      display: none;
+    }
+    .feedback-textarea{
+      background-color: hsla(0,50%,100%,0.4);
+      border: 3 solid black;
+      position: absolute;
+    }
+    #limits{
+      position: fixed;
+      width: calc( 100vw - 24px );
+      height: calc( 100vh - 24px );
+      top: 12px;
+      left: 12px;
+      border: 2px dashed hsla(70,30%,40%,0.8);
+      box-sizing: border-box;
+      /* z-index: 1001; */
+    }
+    #messages{
+      align-items: center;
+      background-color: black;
+      color: hsla(0,50%,90%, 0.7);
+      display: flex;
+      justify-content: center;
+      min-height: 48px;
+      position: absolute;
+      top: -100%;
+      transition: top 0.5s;
+      width: 100%;
+    }
+    #messages>p{
+      font-family: sans-serif;
+      font-size: 12px;
+      font-weight: 100;
+      text-transform: uppercase;
+    }
+    #tutorial{
+      background-color: lightgrey;
+      box-sizing: border-box;
+      font-family: sans-serif;
+      font-size: 13px;
+      font-weight: 100;
+      margin: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s;
+      width: 100%;
+    }
+      #tutorial-wrapper{
+        padding: 48px 0;
+        padding-left: calc( (100vw - 500px) /2 );
+      }
+      #tutorial h2{
+        line-height: 100%;
+        color: hsla(0,0%,30%,1);
+        margin: 0 0 32px;
+        font-weight: 100;
+        font-size: 26px;
+      }
+      #tutorial h3{
+        font-weight: 100;
+        color: hsla(0,0%,50%,1);
+        margin: 32px 0 8px;
+      }
+      #tutorial p{
+        margin: 5px 0 15px;
+        max-width: 500px;
+        text-align: justify;
+      }
+      #tutorial p:last-child{
+        margin: 5px 0 0;
+      }
+  </style>
+
+  <aside>
+    <button class="js-new-comment">
+      <span class="icon"></span><label>Novo Comentário</label>
+    </button>
+    <button class="js-send-comment">
+      <span class="icon"></span><label>Enviar Comentários</label>
+    </button>
+    <button class="js-help-me">
+      <span class="icon"></span><label>Ajuda</label>
+    </button>
+    <div id="messages">
+      <p></p>
+    </div><div id="tutorial">
+      <div id="tutorial-wrapper">
+        <h2>Sobre a ferramenta de feedback</h2>
+        <p>A barra de ferramentas abaixo de seu site permite que você envie comentários ao desenvolvedor. Use-a para apontar e comentar elementos na página. <em>Ela só aparecerá no site de teste</em>, e portanto seus clientes não a verão.</p>
+        <h3>Adicionando um comentário</h3>
+        <p>Clique em <em>Novo Comentário</em> e uma caixa aparecerá no centro da tela. Essa caixa possui uma seta e uma área de texto. Você poderá:</p>
+        <ul>
+          <li>Arrastar a seta para posicionar sua caixa.</li>
+          <li>Clicar na seta para rotacioná-la.</li>
+          <li>Escrever comentários na área de texto.</li>
+        </ul>
+        <p>Ou seja, aponte para um elemento e deixe seu comentário ou solicitação sobre ele.</p>
+        <h3>Apagando um comentário</h3>
+        <p>Para retirar um comentário, arreste-o até as bordas da página. Enquanto arrasta, você verá linhas tracejadas ao redor da página. Se a seta tocar nessas linhas, o comentário será apagado.
+        <h3>Enviando comentários</h3>
+        <p>Basta clicar em <em>Enviar Comentários</em> e todos os comentários na tela serão enviados. Eles serão avaliados e você receberá uma resposta de suas solicitações em até 24 horas.</p>
+        <p>Você pode enviar quantas mensagens quiser de uma só vez, mas há uma limitação:</p>
+        <p>Uma vez iniciados os comentários, <em>evite alterar a largura da janela, maximizá-la ou rolar com o scroll.</em> Se o fizer, não esqueça de reposicionar os comenários para que as setas apontem para os elementos corretos.</p>
+      </div>
+    </div>
+  </aside>
+
+  <div id="limits" class="hidden"></div>
+
+  <script></script>
+
+</template>
+
+<script>
+  class FeedbackBar extends HTMLElement{
+    constructor(){
+      super()
+      const el = document.querySelector('#tpl-feedback-bar')
+              .content.cloneNode( true )
+      this.attachShadow({mode:'open'}).appendChild( el )
+
+      this.bar = this.shadowRoot.querySelector('aside')
+      this.btnNewComment = this.shadowRoot.querySelector(".js-new-comment")
+      this.btnSendComment = this.shadowRoot.querySelector(".js-send-comment")
+      this.btnHelpMe = this.shadowRoot.querySelector(".js-help-me")
+      this.limits = this.shadowRoot.querySelector("#limits")
+
+      // The container serves as reference for positioning the comments
+      this.boxContainer = document.createElement('div')
+      this.boxContainer.id = "feedback-box-container"
+      this.boxContainer.style.cssText = "position: absolute; top: 0; left: 0;"
+      document.querySelector('body').appendChild(this.boxContainer)
+    }
+    connectedCallback(){
+      this.btnNewComment.addEventListener('click', this.addNewComment.bind(this))
+      this.btnSendComment.addEventListener('click',
+      function(){
+        let messages = this.boxContainer.querySelectorAll("feedback-box")
+        let messageList = []
+        messages.forEach( msg => {
+          messageList.push( msg.exportData() )
+        })
+        let data = {
+          client: 'test',
+          url: window.location.href,
+          width: window.outerWidth,
+          feedback: messageList
+        }
+        this.sendMail.call( this, data )
+      }.bind(this))
+      this.btnHelpMe.addEventListener('click', this.toggleHelp.bind(this))
+    }
+
+    addNewComment( e ){
+      let newComment = document.createElement( 'feedback-box' )
+      // let celoContainer = document.querySelector("#_celo")
+      this.boxContainer.append( newComment )
+    }
+
+    sendMail( data ){
+      if( !document.querySelector("feedback-box")){
+        this.displayMessage("Não há comentários a enviar.")
+        return false
+      }
+      let self = this
+      fetch( 'https://jumprock.co/mail/isacvale', {
+          method: 'POST'
+          ,body: new URLSearchParams(`name=${data.client}&subject=Client feedback&message=${ JSON.stringify(data) }`)
+      })
+      // Promise.resolve(true)
+      .then( function( res ){
+        self.clearComments()
+        self.displayMessage.call( self, "Comentários enviados com sucesso.")
+      })
+    }
+
+    displayMessage( msg ){
+      let board = this.shadowRoot.querySelector("#messages")
+      board.querySelector('p').innerHTML = msg
+      board.style.top = 0
+      setTimeout( function(){
+        board.style.top = "-100%"
+      }, 2500)
+      setTimeout( function(){
+        board.querySelector('p').innerHTML = ""
+      }, 3000)
+    }
+
+    toggleHelp(){
+      let help = this.shadowRoot.querySelector("#tutorial")
+      if( help.style.maxHeight == '1000px' ){
+        help.style.maxHeight = '0'
+      } else {
+        help.style.maxHeight = '1000px'
+      }
+    }
+
+    showLimits(){
+      this.shadowRoot.querySelector("#limits").classList.remove('hidden')
+    }
+    hideLimits(){
+      this.shadowRoot.querySelector("#limits").classList.add('hidden')
+    }
+    clearComments(){
+      document.querySelectorAll("feedback-box").forEach( comment => {
+        comment.deleteMe.call( comment )
+      })
+    }
+  }
+
+  customElements.define( 'feedback-bar', FeedbackBar )
+
+  // Call this function passing as body the automatic message from the client
+  function feedbackWindow( body ){
+    let data = JSON.parse( body )
+    let newWindow = window.open( data.url, '_blank', `location=yes,height=570,width=${data.width},scrollbars=yes,status=yes` )
+    setTimeout( function(){newWindow.regenFeedback( data.feedback )}, 1000 )
+  }
+
+  // This function will recreate the client's comments
+  function regenFeedback( data ){
+    data.forEach( feedback => {
+        let newComment = document.createElement( 'feedback-box' )
+        // let celoContainer = document.querySelector("#_celo")
+        this.boxContainer.append( newComment )
+        newComment.importData( feedback )
+    })
+  }
+</script>

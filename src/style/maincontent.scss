@@ -1,0 +1,500 @@
+@import "main.scss";
+
+main{
+
+  section{
+    padding: 40px $base-offsetX 60px;
+    // p{
+    //   column-count: 1
+    // }
+    // @media (min-width: 1000px){
+    //   .section-text{
+    //     column-count: 2;
+    //     column-gap: 50px;
+    //     text-align: justify;
+    //     hyphens: auto;
+    //   }
+    // }
+  }
+
+  #texto-principal{
+    // background-color: hsla(0, 50%, 100%, 0.3);
+    background-image: linear-gradient(
+      180deg,
+      rgba(255,255,255,.6) 0%,
+      rgba(255,255,255,.5) 45%,
+      rgba(255,255,255,.2) 100%
+    );
+
+    h1{
+      color: $color-primary;
+      font-weight: 300;
+    }
+    p{
+      display: block;
+      max-width: 600px;
+      column-count: 1
+    }
+  }
+  @media (min-width: 1000px){
+    #texto-principal p{
+      column-count: 2;
+      max-width: 750px;
+      column-gap: 50px;
+      // text-align: justify;
+      hyphens: auto;
+    }
+  }
+
+  #titulos-dos-itens{
+    background-color: $color-primary;
+
+
+    h1{
+      margin-bottom: 30px;
+    }
+
+    &>div{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+    }
+    @media (min-width: 680px){
+      &>div{
+        flex-direction: row;
+      }
+    }
+    h1{
+      color: $color-secondary;
+      font-weight: 300;
+    }
+
+    .item-card{
+      padding: 10px 10px;
+      text-align: left;
+
+      display: flex;
+      flex-direction: row;
+
+
+      .item-img{
+        border-radius: 50%;
+        height: 35vmin;
+        width: 35vmin;
+        box-sizing: border-box;
+        border: 6px solid $color-tertiary;
+        margin: 0 auto;
+        background-size: cover;
+        display: inline-block;
+      }
+      .item-consultas{
+        background-image: url("../images/service-clinical.png");
+      }
+      .item-vacinas{
+        background-image: url("../images/service-vaccine.png");
+      }
+      .item-outros{
+        background-image: url("../images/service-other.png");
+      }
+
+      &>div{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        h2{
+          color: $color-tertiary;
+          margin-top: 20px;
+          padding: 0 2vmin;
+        }
+
+        p{
+          font-size: calc( 10px + 0.7vmin );
+          color: $color-secondary;
+          max-width: 30vmin;
+          padding: 0 2vmin;
+          margin: 0;
+        }
+      }
+
+      @media (min-width: 680px){
+        &{
+          max-width: 30%;
+          flex-direction: column;
+
+          &>div{
+
+            h2,
+            p{
+              text-align: center;
+            }
+          }
+        }
+        .item-img{
+          display: block;
+          width: 20vmin;
+          height: 20vmin;
+        }
+        // &>div{
+        //   display: inline-block;
+        // }
+        // .item-img{
+        //   display: inline-block;
+        // }
+      }
+    }
+  }
+
+  #galeria-de-fotos{
+    background-color: $color-dark;
+    max-height: 1000px;
+    transition: max-height 2s;
+    overflow: hidden;
+    box-sizing: border-box;
+    display: block;
+    position: relative;
+
+    &.minified{
+      max-height: 110px;
+    }
+
+    h1{
+      color: $color-secondary;
+      font-weight: 300;
+    }
+
+    .picture-wrapper{
+      display: flex;
+
+      .photo-frame{
+        overflow: hidden;
+        background-color: $color-light;
+        padding: 5px 5px 60px;
+        display: inline-block;
+        overflow: hidden;
+        position: relative;
+        margin: 4px;
+        box-shadow: 8px 0 8px 8px $color-dark;
+  
+        img{
+          max-width: 100%;
+          object-fit: cover;
+        }
+
+        p{
+          font-family: $font-curs;
+          font-weight: 500;
+          color: $color-primary;
+          position: absolute;
+          width: 100%;
+          text-align: center;
+        }
+      }
+    }
+
+    .back,
+    .forward{
+      height: 100px;
+      width: 48px;
+      // background-color: white;
+      position: absolute;
+      top: calc( 50% - 50px + 30px );
+      z-index: 1;
+      background-image: url($base-path+"/images/arrow_L_white.svg");
+    }
+    .back{
+      left: 10px;
+    }
+    .forward{
+      right: 10px;
+      transform: scaleX(-1);
+    }
+    .back:hover,
+    .forward:hover{
+      cursor: pointer;
+    }
+  }
+
+  #lightbox{
+    position: fixed;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    user-select: none;
+    // overflow-y: scroll;
+
+
+    #lightbox-background{
+      background-image: url($base-path+"/images/bg-logo.svg");
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #lightbox-foreground{
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: white;
+      width: 75vmin;
+      height: 75vmin;
+      box-shadow: 4px 0 12px 4px black;
+      margin: calc( 50vh - 37.5vmin ) calc( 50% - 37.5vmin );
+    }
+
+    img{
+      object-fit: cover;
+      width: 100%;
+    }
+
+    .pic-legend{
+      color: $color-light;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+      font-family: $font-curs;
+      text-shadow:  2px 0 2px $color-dark,
+                    -2px 0 2px $color-dark,
+                    0 2px 2px $color-dark,
+                    0 -2px 2px $color-dark;
+                    // 3px 2px 5px $color-dark;
+      font-size: 4vmin;
+      line-height: 4.5vmin;
+      margin: 3vmin 0;
+    }
+
+    .back{
+      left: -10vmin;
+    }
+
+    .forward{
+      right: -10vmin;
+    }
+  }  
+
+  #onde-nos-encontrar{
+    $breakpoint0: 525px;
+    $breakpoint1: 900px;
+    background-color: $color-tertiary;
+    // padding-bottom: 60px;
+
+    h1{
+      color: $color-dark;
+      font-weight: 300;
+    }
+
+    .wrap-content{
+      display: flex;
+      flex-direction: column;
+      @media (min-width:$breakpoint1){
+        &{
+          flex-direction: row;
+        }
+      }
+    }
+
+    #google-map-wrapper{
+      // border: 6px solid rgb(238, 238, 236);
+      position: relative;
+      overflow: hidden;
+      // padding-top: 56.25%;
+      width: 100%;
+      height: 60vmin;
+      box-sizing: border-box;
+      flex: 0 0 40vmin;
+
+
+      #google-map{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      @media (min-width:$breakpoint1){
+        &{ // #google-map-wrapper
+          width: 40vmin;
+          height: 40vmin;
+        }
+      }
+    }
+
+    /* This styles the "little Pet" string into a logo.*/
+    .brand{
+      font-family: $font-curs;
+      color: $color-primary;
+      font-size: 32px;
+      &>span:first-child{
+        letter-spacing: -1px;
+        font-weight: 400;
+    }
+    &>span:last-child{
+      font-size: 52px;
+      margin-left: -7px;
+      letter-spacing: -3px;
+      font-weight: 300;
+    }
+  }
+
+    #wrap-contact{
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      font-size: 16px;
+      flex: 1 1 40vmin;
+      margin-top: 20px;
+
+      text-align: center;
+      padding: 0 5vmin;
+
+      img{
+        margin: 0 auto -30px;
+      }
+
+      address{
+        font-style: normal;
+        margin-top: 20px;
+      }
+
+      p{
+        margin: 4px;
+      }
+      a,
+      [itemprop="address"]{
+        font-weight: 600;
+        color: $color-dark;
+        margin: 20px 4px;
+        font-size: 18px;
+      }
+      .microtext{
+        font-style: italic;
+        font-size: 14px;
+        margin-top: -4px;
+      }
+      @media (min-width: $breakpoint0){
+        &{ //#wrap-contact
+          flex-direction: row;
+          text-align: left;
+          // padding: 0 5vmin;
+          // padding-left: 2vmin;
+        }
+        img{
+          margin: -15px 20px -30px;
+          // margin-top: -15px;
+          // margin-right: 20px;
+          // margin-bottom: -30px;
+        }
+      }
+      @media (min-width: $breakpoint1){
+        &{ //#wrap-contact
+          flex-direction: column;
+          padding-left: 2vmin;
+        }
+        img{
+          margin: -15px 20px -30px;
+          // margin-top: -15px;
+        }
+      }
+    }
+  }
+
+  h1{
+    position: relative;
+    font-family: $font-curs;
+    font-size: 36px;
+    letter-spacing: -0.5px;
+    margin: 10px 0;
+  }
+
+  h1::before{
+    content: "";
+    opacity: 0;
+    transition: opacity 1s;
+  }
+  @media (min-width: 475px){
+    h1::before{
+      content: "";
+      position: absolute;
+      left: -42px;
+      top: 10px;
+      height: 32px;
+      width: 32px;
+      background-size: cover;
+      opacity: 0.7;
+      // transition: opacity 1s;
+    // background-size: 100%;
+    }
+  
+    #texto-principal h1::before{
+      transform: rotate(10deg);
+      background-image: url($base-path+"/images/paw-primary.svg");
+    }
+  
+    #titulos-dos-itens h1::before,
+    #galeria-de-fotos h1::before{
+      background-image: url($base-path+"/images/paw-secondary.svg");
+    }
+  
+    #titulos-dos-itens h1::before{
+      transform: rotate(-15deg);
+    }
+  
+    #galeria-de-fotos h1::before{
+      transform: rotate(12deg);
+    }
+  
+    #onde-nos-encontrar h1::before{
+      transform: rotate(-15deg);
+      background-image: url($base-path+"/images/paw-dark.svg");
+    }
+
+  }
+
+  h2{
+    position: relative;
+    font-family: $font-sans;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+    text-transform: lowercase;
+    line-height: 100%;
+    display: inline-block;
+    margin: 6px 0;
+    color: darken($color-primary, 20%);
+    font-weight: 600;
+    // display: inline-block;
+    // max-width: 80%;
+  }
+
+  #section-epilogo{
+    height: 50vh;
+    // width: 100%;
+    position: relative;
+
+    background-attachment: fixed;
+    background-color: darken( lightgrey, 40%);
+    background-image: url("../images/retriever.png");
+    background-size: cover;
+    background-position: bottom 0 right 0;
+    transition: background-position 0.21s;
+
+
+  }
+}
+
+.no-scroll{
+  overflow: hidden;
+}
+
+.business-card{
+  position: absolute;
+  bottom: 30px;
+  left: 10px;
+}
+@media (min-width: 578px){
+  .business-card{
+    left: calc( 40px + ( 100vw - 360px ) * 0.1)
+  }
+}

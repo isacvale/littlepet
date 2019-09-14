@@ -1,0 +1,57 @@
+[
+    {
+        "foto": "00-pugs.png",
+        "alt": "Dois pugs na coleira.",
+        "texto": "Frodo e Sam McPug"
+    },
+    {
+        "foto": "01-peekaboo.png",
+        "alt": "Parte do rosto de um cachorro",
+        "texto": "Peekaboo"
+    },
+    {
+        "foto": "02-smile.png",
+        "alt": "Labrador sorrindo",
+        "texto": "Alegria é um labrador"
+    },
+    {
+        "foto": "03-teeny.png",
+        "alt": "Pequeno filhote de gato",
+        "texto": "Pequeno tigre"
+    },
+    {
+        "foto": "04-furballs.png",
+        "alt": "Dois porcos-da-Índia",
+        "texto": "Merry e Pippin McFurry"
+    },
+    {
+        "foto": "05-party.png",
+        "alt": "Cachorros com adereços natalinos",
+        "texto": "E um feliz ano novo!"
+    },
+    {
+        "foto": "06-stylish.png",
+        "alt": "Belo cão deitado",
+        "texto": "Só falta você"
+    },
+    {
+        "foto": "07-friends.png",
+        "alt": "Gato e cão dormindo lado a lado",
+        "texto": "Melhores amigos"
+    },
+    {
+        "foto": "08-crackers.png",
+        "alt": "Papagaio sentado em uma mão",
+        "texto": "Loro quer carinho"
+    },
+    {
+        "foto": "09-carrots.png",
+        "alt": "Pequeno coelho",
+        "texto": "Meu reino por uma cenoura"
+    },
+    {
+        "foto": "10-evil.png",
+        "alt": "Dois gatos",
+        "texto": "Fofuras e dentes"
+    }
+]

@@ -1,0 +1,343 @@
+<!--
+    Fireback is a web component duo for getting feedback from clients on a static, frontend project. It has two custom tags to do the job:
+
+    <fireback-bar>
+        Will create a fixed bar in the bottom of the screen with three buttons: add comment, send comments and help.
+    <fireback-box>
+        Creates a draggable box for users to enter comments. It also has a spinning arrow for clients to point at what the commentary refers to.
+    
+    The tool relies on the services of jumprock.con, a service that will send you emails with data collected from forms on static websites. When the user sends the message, jumprock will send you a JSON file is sent to with wich you can recreate the client's screen with the comments.
+
+    Jumprock is awesome! They do require you to sign in, though.
+-->
+
+<template id="tpl-fireback-box">
+
+    <style>
+        /* Variables */
+        :host{
+            --color-primary: hsla(158, 20%, 8%, 1);
+            --color-secondary: hsla(54, 99%, 54%, 1);
+            --color-light: 	hsla(54, 67%, 78%,.7);
+            --color-shadow: hsla(70, 50%, 10%, .4);
+            --box-shadow: 3px 3px 0 0 var(--color-shadow);
+            --min-size: 48px;
+            --border-radius: 9px;
+            --border: 4px solid var(--color-primary);
+        }
+        .fireback-box{
+            background-color: var(--color-primary);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            min-height: var(--min-size);
+            min-width: var(--min-size);
+            
+            box-sizing: border-box;
+            position: absolute;
+            left: calc( 50vw - 24px);
+            top: 0;
+        }
+        textarea{
+            background-color: var(--color-light);
+            border-radius: var(--border-radius);
+            border: var(--border);
+            box-shadow: var(--box-shadow);
+            color: var(--color-primary);
+
+            box-sizing: border-box;
+            min-height: 72px;
+            overflow: hidden;
+            padding: 32px;
+            resize: none;
+
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        /*This transitions are unwelcome on first load.*/
+        textarea.transition{
+            transition-property: height, top, left;
+            transition-duration: 0.2s;
+        }
+        .fireback-box-wrapper{
+            z-index: 11;
+            position: absolute;
+        }
+    </style>
+
+
+    <template id="tpl-img-baloon">
+        <svg class="img-baloon" width="48" height="48" version="1.1" viewBox="0 0 12.7 12.7" xmlns="http://www.w3.org/2000/svg">
+            <g transform="translate(0 -284.3)">
+                <g id="g1451" transform="matrix(1.1857 0 0 1.1857 11.896 -55.509)">
+                    <path transform="matrix(.26458 0 0 .26458 0 284.3)" d="m-30.992 8.5566c-3.8383 0-6.9277 3.0914-6.9277 6.9297v20.197c0 3.8383 3.0895 6.9277 6.9277 6.9277h19.645c-0.08752 2.4665-1.5627 4.8367-4.3809 6.6172 10.414-0.02501 17.737-5.4192 18.242-12.74 0.030088-0.26154 0.048455-0.52515 0.048828-0.79492 3.6e-6 -0.0026-7e-7 -0.0052 0-0.0078 2e-7 -6.59e-4 0-0.0013 0-2e-3v-20.197c0-3.8383-3.0895-6.9297-6.9277-6.9297z" fill="#101815"/>
+                    <path transform="matrix(.26458 0 0 .26458 0 284.3)" d="m-28.629 16.305c-0.95786 0-1.7285 0.88491-1.7285 1.9844v4.4102c0 1.0995 0.77065 1.9844 1.7285 1.9844h21.9c0.95786 0 1.7285-0.88491 1.7285-1.9844v-4.4102c0-1.0995-0.77065-1.9844-1.7285-1.9844zm0 10.906c-0.95786 0-1.7285 0.88491-1.7285 1.9844v4.4102c0 1.0995 0.77065 1.9844 1.7285 1.9844h21.9c0.95786 0 1.7285-0.88491 1.7285-1.9844v-4.4102c0-1.0995-0.77065-1.9844-1.7285-1.9844z" fill="#fee715"/>
+                </g>
+            </g>
+        </svg>
+    </template>
+    <template id="tpl-img-arrow">
+        <svg class="js-arrow" width="48" height="48" version="1.1" viewBox="0 0 12.7 12.7" xmlns="http://www.w3.org/2000/svg">
+            <g transform="translate(0 -284.3)">
+            <path class="js-arrow" d="m6.3541 286.22a0.49427 0.49427 0 0 0-0.46199 0.31988h-0.00568l-1.5079 2.3471-1.4325 2.2298 0.00155 3e-3a0.49427 0.49427 0 0 0-0.1447 0.34934 0.49427 0.49427 0 0 0 0.49403 0.49402 0.49427 0.49427 0 0 0 0.097668-0.01l0.00517 0.01h1.7844v2.6381c0 0.26743 0.24752 0.48265 0.55449 0.48265h1.2309c0.30697 0 0.55449-0.21522 0.55449-0.48265v-2.6381h1.8004l0.0031-6e-3a0.49427 0.49427 0 0 0 0.075446 6e-3 0.49427 0.49427 0 0 0 0.49403-0.49402 0.49427 0.49427 0 0 0-0.12919-0.33228l0.0031-6e-3 -1.4407-2.2433-1.5079-2.3466h-0.00569a0.49427 0.49427 0 0 0-0.46199-0.3204z" fill="#fee715"/>
+            </g>
+        </svg>
+    </template>
+
+    
+    <div class="fireback-box-wrapper">
+      <div class="fireback-box btn" draggable="true">
+        <div class="arrow btn"></div>
+        <textarea rows="1"></textarea>
+      </div>
+    </div>
+  </template>
+
+  
+  <script>
+    class FirebackBox extends HTMLElement{
+        constructor( angle=0, text="", pos=false ){
+            super()
+            const el = document.querySelector('#tpl-fireback-box')
+                    .content.cloneNode( true )
+            this.attachShadow({mode:'open'}).appendChild( el )        
+
+            this.eventListeners = new Map() // Uses a Map to keep track of all eventhandlers
+
+            this.state = {
+                angle,
+                text,
+                pos,
+                touchMove: false,
+                key: 0
+            }
+            this.ref = {
+                bar: document.querySelector("fireback-bar"),
+                button: this.shadowRoot.querySelector('.fireback-box'),
+                textArea: this.shadowRoot.querySelector('textarea'),
+                arrow: this.shadowRoot.querySelector('.arrow'),
+                ghost: (function(){
+                        let ghost = new Image
+                        ghost.src = './../art/balloon.svg'
+                        return ghost
+                    })()
+            }
+        }
+
+        connectedCallback( e ){
+            // Sets an unique key to this box
+            let id = String( (new Date).getTime() )
+            this.setAttribute("key", id )
+            this.state.key = id
+
+            // Ads transitions to text area after first paint
+            setTimeout( function(){
+                this.ref.textArea.classList.add("transition")
+            }.bind(this),0)
+            // Add arrow image from svg template
+            this.shadowRoot.querySelector(".arrow.btn")
+                .appendChild( this.shadowRoot.querySelector("#tpl-img-arrow").content.cloneNode(true) )
+
+            // Set event listeners.
+            this.eventListeners.set( this.ref.textArea, {
+                'keyup': e => this.onKeyUp(e),
+                'mouseenter': function(){this.ref.button.setAttribute("draggable", false) }.bind(this),
+                'mouseleave': function(){this.ref.button.setAttribute("draggable", true) }.bind(this),
+            })
+            this.eventListeners.set( this.ref.button, {
+                'click': e => this.onButtonClick(e),
+                'dragstart': e => this.onDragStart(e),
+                'touchmove|false': e => this.onTouchMove(e),
+                'touchend|false': e => this.onTouchEnd(e),
+            })
+            this.eventListeners.set( document.querySelector('body'), {
+                'dragover|false': e => e.preventDefault(),
+                'drop|false': e => this.onDrop(e)
+            })
+            this.addEventListeners() // Sets all event handlers defined in this.eventListeners obj
+            
+            // Adjust appearance
+            if( !this.state.pos ) // Set center of screen as default
+                this.state.pos = [
+                    window.innerWidth/2,
+                    document.documentElement.scrollTop+window.innerHeight/2
+                ]
+            this.redraw()
+        }
+
+        // Get all this.eventListeners references and actually create the listeners.
+        // "The "|false" is a flag to adde the event in passive mode.
+        addEventListeners(){
+            for( let [domElement, eventListenersDict] of this.eventListeners ){
+            Object.keys( eventListenersDict ).forEach( eventName => {
+                if( eventName.includes('|false'))
+                    domElement.addEventListener( eventName.replace('|false',""), eventListenersDict[eventName], {passive: false} )
+                else
+                    domElement.addEventListener( eventName, eventListenersDict[eventName], {passive: true} )
+                })
+            }
+        }
+
+        // For every key on text area we have to keep track of state (control it) and redraw it, so we can be sure to handle overflow.
+        onKeyUp(e){
+            const target = e.target || e.originalTarget
+            this.state.text = target.value
+            this.redraw.call(this)
+        }
+
+        // This event will be fired wherever the box is clicked (inside textarea, for example), so we must filter it.
+        onButtonClick( e ){
+            if( e.target && e.target.classList.contains( 'js-arrow' )){
+                e.stopPropagation()
+                this.rotateArrow.call(this)
+                this.redraw()
+            }
+        }
+
+        // Rotate arrow according to the state. 
+        rotateArrow(){
+            this.state.angle += 45
+            this.ref.arrow.style.cssText = `transform: rotate(${ this.state.angle }deg)`
+        }
+
+        // Drag events are (currently) for the mouse. Mozilla's thing: drag should carry dataTransfer information.
+        onDragStart( e ){
+            e.dataTransfer.setData('text/plain', JSON.stringify(this.state) )
+            this.ref.bar.showLimits() // Method defined on <fireback-bar> component.
+            // let ghost = new Image
+            // ghost.src = './../art/balloon.svg'
+            e.dataTransfer.setDragImage(this.ref.ghost,24,24)
+        }
+        // Drop is fired on the drop zone.
+        onDrop(e){
+            e.preventDefault()
+            e.stopPropagation()
+            this.ref.bar.hideLimits()
+
+            const oldState = JSON.parse( e.dataTransfer.getData('text/plain') )
+            const box = document.querySelector(`[key="${oldState.key}"]`)
+            const container = document.querySelector("#fireback-box-container")
+
+            const newState = Object.assign({}, oldState)
+            newState.pos = [+e.clientX-24, +e.clientY-24]            
+            if( box.checkRemove( newState.pos[0], newState.pos[1]-24 ) )
+                box.deleteMe()                
+            else
+                box.importData( newState )
+        }
+
+        // Drag events are (currently) for the mouse. Touch is used to handle touchscreen, with a very different implementation.
+        onTouchMove(e){
+            if( e.path.includes(this.textarea))
+                return false
+
+            this.ref.bar.showLimits()
+
+            this.state.touchMove = this.state.touchMove ? this.state.touchMove : window.innerWidth
+
+            this.state.pos = [e.touches[0].pageX-24, e.touches[0].pageY-24]
+            this.ref.button.style.left = `${e.touches[0].pageX-24}px`
+            this.ref.button.style.top = `${e.touches[0].pageY-24}px`
+        }
+        onTouchEnd(e){
+            if( this.state.touchMove ){                
+                this.ref.bar.hideLimits()
+
+                const box = this
+                const container = document.querySelector("#fireback-box-container")
+
+                const newState = Object.assign({}, this.state)
+                if( this.checkRemove( newState.pos[0], newState.pos[1]-24, this.state.touchMove ) )
+                    this.deleteMe()                
+                else
+                    this.importData( newState )
+                this.state.touchMove = false
+            }
+        }
+
+        // Checks to see if component is outside a safe zone. If it is too close to the margins, it must be deleted.
+        checkRemove( posX, posY, windowWidth = false ){
+            let innerLimit = 12
+            let isOutside = posX < innerLimit
+                            || posY < innerLimit -24
+                            || posX > ( (windowWidth || window.innerWidth) -48 - innerLimit)
+                            || posY > (window.innerHeight -72 - innerLimit)
+            return isOutside
+        }
+
+        // This function is responsible for displaying this component properly.
+        // It will center the component on state.pos, then give the taxt area the correct height and move the textarea to keep it inside the page.
+        redraw(){
+            this.ref.button.style.left = `${this.state.pos[0]}px`
+            this.ref.button.style.top = `${this.state.pos[1]}px`
+
+            this.fixTextPosition() // Repositions textarea in relation to button and margins
+            this.textAreaAutoResize() // Resize textarea according to the text length 
+        }
+        
+        // Determines the position of the text area in relation to the button, and makes sure it stays within the window
+        fixTextPosition(){
+            const angle = +this.state.angle%360
+            let textRect = this.ref.textArea.getBoundingClientRect()
+            const btnRect = this.ref.button.getBoundingClientRect()
+            const pos = {
+                left: -textRect.width + btnRect.width/2,
+                top: btnRect.height/2
+            }
+
+            // Determines text area in relation to button
+            if( [0,180].includes(angle) )
+                pos.left = -textRect.width/2 + btnRect.width/2
+            else if( [225,270,315].includes(angle) )
+                pos.left = btnRect.width/2
+            if( [90,270].includes(angle) )
+                pos.top = -textRect.height/2 + btnRect.height/2
+            else if ( [135,180,225].includes(angle) )
+                pos.top = -textRect.height + btnRect.height/2
+                
+            // Prevents the box from extending beyond the document.
+            const windowWidth = this.state.touchMove ? this.state.touchMove : window.innerWidth
+            if( btnRect.x+pos.left < 0 )
+                pos.left = 12 - btnRect.x
+            else if( textRect.right > windowWidth )
+                pos.left = windowWidth-btnRect.x-textRect.width-12            
+            if( btnRect.y+pos.top < 0 )
+                pos.top = 12 - btnRect.y
+    
+            this.ref.textArea.style.cssText = `top: ${ pos.top }px; left: ${ pos.left }px;` 
+        }
+
+        // This is necessary to adapt the textarea height to the text content
+        textAreaAutoResize(){
+            this.ref.textArea.style.height = '0px'
+            this.ref.textArea.style.height = (this.ref.textArea.scrollHeight)+9+'px'
+        }
+
+        // Remove event listeners then destroys this instance of <fireback-box>
+        deleteMe(){
+            for (let [key, value] of this.eventListeners){
+                Object.keys( value ).forEach( eventName =>{
+                    key.removeEventListener( eventName, value[eventName])
+                })
+            }
+            this.eventListeners.delete( this )
+            this.remove()
+        }
+
+        // Export relevant data as a JSON string
+        exportData(){
+            return (JSON.stringify(this.state))
+        }
+
+        // Sets the state and call redrawing methods
+        importData( data ){
+            this.state = typeof data == "string" ? JSON.parse( data ) : Object.assign({}, data)
+            this.ref.arrow.style.cssText = `transform: rotate(${ data.angle }deg)`
+            this.shadowRoot.querySelector('textarea').value = this.state.text
+            this.redraw()
+        }
+    }
+    customElements.define( 'fireback-box', FirebackBox )
+  </script>
+  

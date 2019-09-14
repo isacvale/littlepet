@@ -1,0 +1,202 @@
+@import "main.scss";
+
+/*
+  Layout
+*/
+header{
+  position: -webkit-sticky;
+  position: sticky;
+  top: -128px;
+  background-color: $color-tertiary;
+  background-image: linear-gradient(rgba(255,255,255,.4), transparent, transparent);
+  box-shadow: 0 2px 10px 2px $color-shade;
+  z-index: 2;
+
+  /* This styles the "little Pet" string into a logo.*/
+  .brand{
+    font-family: $font-curs;
+    color: $color-primary;
+    font-size: 32px;
+    &>span:first-child{
+      letter-spacing: -1px;
+      font-weight: 400;
+    }
+    &>span:last-child{
+      font-size: 52px;
+      margin-left: -7px;
+      letter-spacing: -3px;
+      font-weight: 300;
+    }
+  }
+
+  /* The "lowerbar" is the sticky part of the header.*/
+  .lowerbar{
+    position: relative;
+    padding-bottom: 8px;
+    overflow-x: hidden;
+    z-index: 2;
+    p{
+      margin: -10px 0 0 0;
+      text-align: center;
+    }
+    &>p:last-of-type{
+      text-transform: lowercase;
+      line-height: 100%;
+      margin-top: -6px;
+      font-size: 13px;
+      color: $color-dark;
+    }
+  }
+
+  #logo-main{
+    display: block;
+    margin: 0 auto;
+    opacity: 1.0;
+    transition: all 0.3s;
+    // transition-delay: 0.1s;
+    position: relative;
+    top: 0;
+
+  }
+  #logo-faint{
+    position: absolute;
+    top: 3px;
+    left: 10px;
+    height: 60px;
+    opacity: 0.3;
+    transition: all 0.3s;
+    // transition-delay: 0.1s;
+
+  }
+  #logo-main.hidden,
+  #logo-faint.hidden{
+    top: -40px;
+    opacity: 0;
+  }
+
+  #hamburguer{
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    height: 48px;
+    width: 48px;
+    opacity: 0.3;
+      right: -500px;
+      opacity: 0;
+      transition: 0.3s all;
+    div{
+      background-color: $color-primary;
+      height: 6px;
+      width: 40px;
+      margin-left: 4px;
+      box-shadow: 0 1px 2px 1px hsla(0,50%,50%,0.3);
+      transform: translate(0,10px);
+    }
+    div + div{
+      margin-top: 5px;
+    }
+    &:hover{
+      opacity: 0.6;
+    }
+  }
+  @media screen and (max-width: 900px){
+    #hamburguer{
+      right: 10px;
+      opacity: 0.3;
+    }
+  }
+
+
+
+  @mixin nav-font{
+    font-size: 16px;
+    text-decoration: none;
+    color: lighten( $color-primary, 10% );
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+  @mixin nav-font-login{
+    background-color: lighten( $color-primary, 10% );
+    color: $color-light;
+  }
+
+  #menu-nav,
+  #main-nav{
+    transition: all 0.5s;
+    // &>div{
+    //   // background-color: blue;
+    // }
+    a{
+      @include nav-font;
+    }
+    a:last-of-type{
+      @include nav-font-login
+    }
+  }
+
+  #menu-nav{
+    position: absolute;
+    top: 36px;
+    right: -500px;
+      a{
+        padding: 3px 5px;
+      }
+    a+a{
+      margin-left: 6px;
+    }
+    a:last-of-type{
+      padding: 3px 20px;
+      margin-right: 5px;
+    }
+  }
+  @media screen and (min-width: 900px){
+    #menu-nav{
+      right: 10px;
+    }
+  }
+
+  #main-nav{
+    max-height: 1000px;
+    overflow: hidden;
+    &>div{
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20% 35px;
+    }
+    a{
+      box-sizing: border-box;
+      text-align: center;
+      display: block;
+      margin: 0 auto;
+      padding: 10px;
+      width: 100%;
+      border-top: 1px solid $color-shade;
+    }
+    a:last-of-type{
+      margin-top: 10px;
+      border-top: none;
+    }
+    &.hidden{
+      max-height: 0;
+    }
+  }
+  @media (min-width: 900px){
+    #main-nav{
+      max-height: 0;
+    }
+  }
+
+}
+
+#anchor-servicos,
+#anchor-itens,
+#anchor-fotos,
+#anchor-localizacao,
+#anchor-epilogo{
+  position: absolute;
+  display: block;
+  top: -30px;
+  visibility: hidden;
+}

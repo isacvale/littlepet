@@ -1,0 +1,522 @@
+<!--
+    Fireback is a web components duo for getting feedback from clients on a static, frontend project. It has two custom tags to do the job:
+
+    <fireback-bar>
+        Will create a fixed bar in the bottom of the screen with three buttons: add comment, send comments and help.
+    <fireback-box>
+        Creates a draggable box for users to enter comments. It also has a spinning arrow for clients to point at what the commentary refers to.
+    
+    The tool relies on the services of jumprock.con, a service that will send you emails with data collected from forms on static websites. When the user sends the message, jumprock will send you a JSON file is sent to with wich you can recreate the client's screen with the comments.
+
+    Jumprock is awesome! They do require you to sign in, though.
+-->
+
+  
+  <template id="tpl-fireback-bar">
+    <style>/* Variables */
+      :host{
+          --color-primary: hsla(158, 20%, 8%, 1);
+          --color-secondary: hsla(54, 99%, 54%, 1);
+          --color-light: 	hsla(54, 67%, 78%,.7);
+          --color-shadow: hsla(70, 50%, 10%, .4);
+          --box-shadow: 3px 3px 0 0 var(--color-shadow);
+          --min-size: 48px;
+          --border-radius: 9px;
+          --border: 4px solid var(--color-primary);
+      }
+      
+      :host{
+        width: 100vw;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        z-index: 1000;
+      }
+      aside{
+        background-color: var(--color-primary);
+        color: var(--color-secondary);
+        height: var(--min-size);
+      }
+      #btn-container{
+        display: flex;
+        justify-content: flex-start;
+        max-height: var(--min-size);
+        position: relative;
+      }
+      button{
+        background-color: transparent;
+        border: none;
+        text-transform: uppercase;
+        box-sizing: border-box;
+        position: relative;
+        min-width: var(--min-size);
+        text-align: left;
+        transition: min-width .8s;
+        padding: 0;
+        overflow: hidden;
+      }
+      button,
+      button *{
+        cursor: pointer;
+      }
+      button:first-child{
+        background-color: var(--color-secondary);
+        text-align: right;
+        min-width: calc( 2 * var(--min-size));
+        padding-right: 6px;
+      }
+      button:hover{
+        box-shadow: inset 0 0 12px 30px hsla(0,50%,0%,.5);
+      }    
+      button:first-child:hover{
+        box-shadow: inset 0 0 12px 30px hsla(0,50%,0%,.2);
+      }
+      button label{
+        display: inline-block;
+        overflow: hidden;
+      }
+      button svg{
+        vertical-align: top;
+        display: inline-block;
+      }
+      button:hover svg{
+        -webkit-filter: drop-shadow(4px 4px 0 0 hsla(70, 50%, 0%, .5));      
+        filter: drop-shadow(4px 4px 0 0 hsla(70, 50%, 0%, .5));
+      }
+      button:hover svg{
+        -webkit-filter: drop-shadow(4px 4px 0 0 hsla(70, 50%, 0%, .8));   
+        filter: drop-shadow(4px 4px 0 0 hsla(70, 50%, 0%, .8));
+      }
+      button .text{
+        display: inline-block;
+        max-width: 0;
+        overflow: hidden;
+        color: var(--color-secondary);
+        font-weight: 100;
+        transition: max-width .8s;
+        margin: 18px  8px 0 0;
+        white-space: nowrap;
+      }
+      button:first-child .text{
+        color: var(--color-primary);
+        font-weight: 600;
+      }
+      #limits{
+        position: fixed;
+        width: calc( 100vw - var(--min-size) / 2 );
+        height: calc( 100vh - var(--min-size) / 2 );
+        top: calc( var(--min-size) / 4 );
+        left: calc( var(--min-size) / 4 );
+        border: 1px dashed var(--color-primary);
+        box-sizing: border-box;
+      }
+      #limits::after{
+        content: "";
+        display: block;
+        width: calc( 100vw - var(--min-size) / 2 + 4px);
+        height: calc( 100vh - var(--min-size) / 2 + 4px);
+        border: 1px dashed var(--color-secondary);
+        position: relative;
+        top: -4px;
+        left: -4px;
+      }
+      .hidden{
+        display: none;
+      }
+      #tutorial{
+        background-color: var(--color-light);
+        position: absolute;
+        box-sizing: border-box;
+        max-height: 0;
+        width: 100vw;
+        bottom: var(--min-size);
+        overflow-y: scroll;
+
+        color: var(--color-primary);
+        font-family: sans-serif;
+        font-size: 16px;
+        font-weight: 200;
+
+        opacity: 0.85;
+        transition: max-height 0.5s;
+      }
+      #tutorial-wrapper{
+        padding: var(--min-size);
+        box-sizing: border-box;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      #tutorial.show{
+        bottom: var(--min-size);
+        max-height: 50vh;
+      }
+      #tutorial h2{
+        text-transform: uppercase;        
+        line-height: 130%;
+        font-weight: 100;
+        font-size: 22px;
+      }
+      #tutorial h3{
+        font-weight: 600;
+        margin: 32px 0 8px;
+      }
+      #tutorial p{
+        margin: 5px 0 15px;
+        text-align: justify;
+      }
+      #switch{
+        position: absolute;
+        top: 0;
+        right: -48px;
+        height: 48px;
+        width: 48px;
+        transition: right 0.5s;
+        transition: transform 0.5s;
+        cursor: pointer;
+      }
+      @media (min-width:700px){
+        button:first-child{
+          min-width: 300px;
+        }
+        button .text{
+          max-width: 300px;
+        }
+        #switch{
+          right: 0;
+        }
+      }
+      /* Adding .minimized class to the bar undoes the effects of media query above. */
+      .minimized button:first-child{
+        min-width: calc( 2 * var(--min-size));
+      }
+      .minimized button .text{
+        transition: max-width 0.5s;
+        max-width: 0px;
+      }
+      .minimized #switch{
+        transform: rotate3d(0,1,0,180deg);
+      }
+      #messages{
+        align-items: center;
+        background-color: var(--color-primary);
+        color: var(--color-secondary);
+        display: flex;
+        justify-content: center;
+        min-height: 48px;
+        max-height: 0;
+        position: absolute;
+        width: 100vw;
+        overflow: hidden;
+        transition: max-height 0.8s;
+        /* transform: rotate3d(1,0,0,90deg);
+        transition-property: top, transform, max-height;
+        transition-duration: 0.8s; */
+      }
+      #messages>p{
+        font-family: sans-serif;
+        font-size: 13px;
+        font-weight: 200;
+        text-transform: uppercase;
+      }
+      #messages.show{
+        top: 0;
+        max-height: 48px;
+        /* transform: rotate3d(1,0,0,0deg):  */
+
+      }
+    </style>
+
+    <template id="tpl-balloon">
+        <svg width="48" height="48" version="1.1" viewBox="0 0 12.7 12.7" xmlns="http://www.w3.org/2000/svg">
+          <path d="m2.669 0.72673c-1.0613 0-1.9155 0.85475-1.9155 1.916v5.5843c0 1.0613 0.85422 1.9155 1.9155 1.9155h5.4317c-0.024199 0.68197-0.43207 1.3373-1.2113 1.8296 2.8794-0.0069 4.9041-1.4984 5.0438-3.5225 0.0083-0.072313 0.0134-0.1452 0.0135-0.21979 1e-6 -7.19e-4 -1e-6 -0.00144 0-0.00216v-5.529e-4 -5.5843c0-1.0613-0.85422-1.916-1.9155-1.916z" fill="#101815" stroke-width=".27649"/>
+          <path d="m3.3223 2.8691c-0.26484 0-0.47792 0.24467-0.47792 0.54867v1.2194c0 0.304 0.21308 0.54867 0.47792 0.54867h6.0552c0.26484 0 0.47792-0.24467 0.47792-0.54867v-1.2194c0-0.304-0.21308-0.54867-0.47792-0.54867zm0 3.0154c-0.26484 0-0.47792 0.24467-0.47792 0.54867v1.2194c0 0.304 0.21308 0.54867 0.47792 0.54867h6.0552c0.26484 0 0.47792-0.24467 0.47792-0.54867v-1.2194c0-0.304-0.21308-0.54867-0.47792-0.54867z" fill="#fee715" stroke-width=".27649"/>
+         </svg>
+    </template>
+    <template id="tpl-airplane">
+      <svg class="svg-airplane" width="48" height="48" version="1.1" viewBox="0 0 12.7 12.7" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+        <g transform="translate(0 -284.3)">
+          <path d="m4.8704 291.29 4.8461-3.4966-0.91667 5.711-3.0289-1.5879-1.4141 1.1918 0.13978-1.979-1.5131-0.84277 5.9113-2.1628-4.0074 2.7953z" fill="#fee715"/>
+        </g>
+      </svg>
+    </template>
+    <template id="tpl-question">
+      <svg class="svg-question" width="48" height="48" version="1.1" viewBox="0 0 12.7 12.7" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+        <g transform="translate(0 -284.3)">
+          <path d="m6.7819 291.65h-1.4047v-0.19066q0-0.31906 0.1284-0.5642 0.1284-0.24902 0.54085-0.63034l0.24903-0.22568q0.22179-0.20234 0.32296-0.38132 0.10506-0.17899 0.10506-0.35798 0-0.27237-0.18677-0.42412-0.18677-0.15564-0.5214-0.15564-0.31517 0-0.68093 0.1323-0.36576 0.1284-0.76264 0.38521v-1.2218q0.47081-0.16342 0.85992-0.24124 0.3891-0.0778 0.75097-0.0778 0.94941 0 1.4475 0.3891 0.49805 0.38521 0.49805 1.1284 0 0.38132-0.15175 0.68482-0.15175 0.29961-0.51751 0.64591l-0.24903 0.22179q-0.26459 0.24124-0.3463 0.3891-0.081711 0.14397-0.081711 0.31907zm-1.4047 0.57587h1.4047v1.3852h-1.4047z" dominant-baseline="auto" fill="#fee715" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+        </g>
+      </svg>
+    </template>
+    <template id="tpl-slide">
+        <svg width="48" height="48" version="1.1" viewBox="0 0 12.7 12.7" xmlns="http://www.w3.org/2000/svg">
+          <path d="m7.1335 3.2028c-0.09153 0-0.18315 0.034849-0.25328 0.10498l-2.7891 2.7891c-0.14027 0.14027-0.14027 0.36593 0 0.5062l2.7891 2.7891c0.14027 0.14027 0.3663 0.14027 0.50657 0l0.66882-0.66881c0.14027-0.14027 0.14027-0.36593 0-0.5062l-1.867-1.867 1.867-1.867c0.14027-0.14027 0.14027-0.3663 0-0.50657l-0.66882-0.66881c-0.070135-0.070135-0.16175-0.10498-0.25328-0.10498z" fill="#fee715"/>
+         </svg>
+    </template>
+    
+  
+    <aside>
+
+      <div id="btn-container">
+        <button class="js-new-comment">
+          <label>
+            <span class="text"></span>
+            <span class="icon"></span>
+          </label>
+        </button>
+  
+        <button class="js-send-comment">
+          <label>
+            <span class="icon"></span>
+            <span class="text"></span>
+          </label>
+        </button>
+  
+        <button class="js-help-me">
+          <label>
+            <span class="icon"></span>
+            <span class="text"></span>
+          </label>
+        </button>
+      </div>
+
+      <div id="switch" aria-hidden="true"></div>
+
+      <div id="messages">
+        <p></p>
+      </div>
+      
+      <div id="tutorial">
+        <div id="tutorial-wrapper"></div>
+      </div>
+    </aside>
+  
+    <div id="limits" class="hidden"></div>
+  
+    <script></script>
+  
+  </template>
+  
+  <script>
+    class FirebackBar extends HTMLElement{
+      constructor(){
+        super()
+        const el = document.querySelector('#tpl-fireback-bar')
+                .content.cloneNode( true )
+        this.attachShadow({mode:'open'}).appendChild( el )
+
+        this.lang = 'pt'
+  
+        this.bar = this.shadowRoot.querySelector('aside')
+        this.btnNewComment = this.shadowRoot.querySelector(".js-new-comment")
+        this.btnSendComment = this.shadowRoot.querySelector(".js-send-comment")
+        this.btnHelpMe = this.shadowRoot.querySelector(".js-help-me")
+        this.limits = this.shadowRoot.querySelector("#limits")
+        this.btnSwitch = this.shadowRoot.querySelector('#switch')
+  
+        // The container serves as reference for positioning the comments
+        this.boxContainer = document.createElement('div')
+        this.boxContainer.id = "fireback-box-container"
+        this.boxContainer.style.cssText = "position: absolute; top: 0; left: 0;"
+        document.querySelector('body').appendChild(this.boxContainer)
+      }
+      connectedCallback(){
+        this.btnNewComment.addEventListener('click', this.addNewComment.bind(this))
+        this.btnSendComment.addEventListener('click',
+        function(){
+          let messages = this.boxContainer.querySelectorAll("fireback-box")
+          let messageList = []
+          messages.forEach( msg => {
+            messageList.push( msg.exportData() )
+          })
+          let data = {
+            client: 'test',
+            url: window.location.href,
+            width: window.outerWidth,
+            feedback: messageList
+          }
+          this.sendMail.call( this, data )
+        }.bind(this))
+        this.btnHelpMe.addEventListener('click', this.toggleHelp.bind(this))
+        console.log('btnswitch', this.btnSwitch)
+        this.btnSwitch.addEventListener('click', e => {
+          let container = this.shadowRoot.querySelector('aside')
+          console.log('clicktyclick',this.boxContainer.classList)
+          container.classList.contains("minimized")
+            ? container.classList.remove("minimized")
+            : container.classList.add("minimized")
+        })
+
+        // Adds svg icons
+        _stampTemplate( this.shadowRoot, {
+          ".js-new-comment .icon": "#tpl-balloon",
+          ".js-send-comment .icon": "#tpl-airplane",
+          ".js-help-me .icon": "#tpl-question",
+          "#switch": "#tpl-slide"
+        })
+        this.fillText( this.lang )
+      }
+  
+      addNewComment( e ){
+        let newComment = document.createElement( 'fireback-box' )
+        // let celoContainer = document.querySelector("#_celo")
+        this.boxContainer.append( newComment )
+      }
+  
+      sendMail( data ){
+        if( !document.querySelector("fireback-box")){
+          this.displayMessage("Não há comentários a enviar.")
+          return false
+        }
+        let self = this
+        fetch( 'https://jumprock.co/mail/isacvale', {
+            method: 'POST'
+            ,body: new URLSearchParams(`name=${data.client}&subject=Client fireback&message=${ JSON.stringify(data) }`)
+        })
+        // Promise.resolve(true)
+        .then( function( res ){
+          self.clearComments()
+          self.displayMessage.call( self, "Comentários enviados com sucesso.")
+        })
+      }
+
+      // Adds localized text
+      fillText( lang ){
+        const text = {
+          pt: {
+            newComment: "Novo comentário",
+            sendComment: "Enviar comentário",
+            helpMe: "Ajuda",
+            tutorial: `<h2>Como enviar feedback</h2>
+          <p>A barra abaixo permite enviar comentários ao desenvolvedor, e <em>apenas aparecerá no site de teste</em> - seus clientes não a verão.</p>
+          <h3>Adicionando um comentário</h3>
+          <p>Clique em <em>Novo Comentário</em> e uma caixa aparecerá no centro da tela. Essa caixa possui uma seta e uma área de texto. Você poderá:</p>
+          <ul>
+            <li>Arrastar a seta para posicionar sua caixa.</li>
+            <li>Clicar na seta para rotacioná-la.</li>
+            <li>Escrever comentários na área de texto.</li>
+          </ul>
+          <p>Ou seja, aponte para um elemento e deixe seu comentário sobre ele.</p>
+          <h3>Apagando um comentário</h3>
+          <p>Para retirar um comentário, arreste-o até as linhas tracejadas nas bordas da página.
+          <h3>Enviando comentários</h3>
+          <p>Clique em <em>Enviar Comentários</em> e todos os comentários na tela serão enviados. O desenvolvedor entrará em contato.</p>
+          <h3>Atenção</h3>
+          <p>Uma vez iniciados os comentários, <em>evite alterar a largura da janela, maximizá-la ou rolar com o scroll.</em> Se o fizer, não esqueça de reposicionar os comenários para que as setas apontem para os elementos corretos.</p>`,
+          "messagesSent" : "Mensagem enviada com sucesso",
+          "messagesNone" : "Não há mensagem a enviar"
+
+          },
+          en: {
+            newComment: "New comment",
+            sendComment: "Send",
+            helpMe: "Help",
+            tutorial: `<h2>Sending feedback</h2>
+          <p>The bar below allows you to send feedback to the developer, and <em>will only appear on the development environment</em> - your clients won't see it.
+          <h3>To add a comment</h3>
+          <p>Click <em>new comment</em> and a box pops up in the center on the screen, containing an arrow and a text area. You may:</p>
+          <ul>
+            <li>Drag the arrow to position the box.</li>
+            <li>Click the arrow to rotate it.</li>
+            <li>Write comments in the text area.</li>
+          </ul>
+          <p>In other words, point to what you want to remark and leave a comment.</p>
+          <h3>Deleting a comment</h3>
+          <p>Just drag the comment to the dashed lines on the borders of the screen.
+          <h3>Sending</h3>
+          <p>Click <em>send</em> and all comments will be send to the developer.</p>
+          <h3>Attention</h3>
+          <p>Once you start adding comments, avoid <em>scrolling or resizing the page</em>, which can inadvertedly reposition comments. Send the current comments before resizing the screen.`
+          },
+          "messagesSent" : "Feedback sent successfully",
+          "messagesNone" : "There's no comments to send"
+        }
+        const stampGuide = {
+          ".js-new-comment .text": "newComment",
+          ".js-send-comment .text": "sendComment",
+          ".js-help-me .text": "helpMe",
+          "#tutorial-wrapper": "tutorial"
+        }
+
+        Object.keys(stampGuide).map( key => {
+          const lineRef = stampGuide[key]
+          const t = text[lang][lineRef]
+
+          this.shadowRoot.querySelector( key )
+            .innerHTML = t
+        })
+      }
+  
+      displayMessage( msg ){
+        let board = this.shadowRoot.querySelector("#messages")
+        board.querySelector('p').innerHTML = msg
+        board.classList.add('show')
+        setTimeout(()=>{board.classList.remove('show')},3000)
+        // board.style.top = 0
+        // setTimeout( function(){
+        //   board.style.top = "-100%"
+        // }, 2500)
+        // setTimeout( function(){
+        //   board.querySelector('p').innerHTML = ""
+        // }, 3000)
+      }
+  
+      toggleHelp(){
+        let help = this.shadowRoot.querySelector("#tutorial")
+        if( help.classList.contains("show"))
+          help.classList.remove("show")
+        else
+          help.classList.add("show")
+        // if( help.style.maxHeight == '1000px' ){
+        //   help.style.maxHeight = '0'
+        // } else {
+        //   help.style.maxHeight = '1000px'
+        // }
+      }
+  
+      showLimits(){
+        this.shadowRoot.querySelector("#limits").classList.remove('hidden')
+      }
+      hideLimits(){
+        this.shadowRoot.querySelector("#limits").classList.add('hidden')
+      }
+      clearComments(){
+        document.querySelectorAll("fireback-box").forEach( comment => {
+          comment.deleteMe.call( comment )
+        })
+      }
+    }
+  
+    customElements.define( 'fireback-bar', FirebackBar )
+  
+    // Call this function passing as body the automatic message from the client
+    function firebackWindow( body ){
+      let data = JSON.parse( body )
+      let newWindow = window.open( data.url, '_blank', `location=yes,height=570,width=${data.width},scrollbars=yes,status=yes` )
+      setTimeout( function(){newWindow.regenFireback( data.feedback )}, 1000 )
+    }
+  
+    // This function will recreate the client's comments
+    function regenFireback( data ){
+      data.forEach( feedback => {
+          let newComment = document.createElement( 'fireback-box' )
+          // let celoContainer = document.querySelector("#_celo")
+          this.boxContainer.append( newComment )
+          newComment.importData( feedback )
+      })
+    }
+
+    
+  /*
+  The obj parameter's keys is a selector for where you want the template to be stamped, and the value is the selector for the template you want to stamp. Use example: stampTemplate( document, {"#where-to-stamp", "#tpl-what-to-stamp"}).
+  The scope is a variable to facilitate using inside shadowDOMs.
+  */
+  function _stampTemplate( scope, obj ){
+    Object.keys( obj ).forEach( key => {
+      scope.querySelector(key).appendChild(
+        scope.querySelector( obj[key] ).content.cloneNode(true)
+      )
+    })
+  }
+  </script>
+  
+
+

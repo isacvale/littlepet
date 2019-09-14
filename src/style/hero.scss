@@ -1,0 +1,61 @@
+@import "main.scss";
+
+#section-hero{
+  background-size: cover;
+  background-repeat: repeat;
+  background-position: top -0px center;
+  height: calc( 100vh - 260px );
+
+  min-height: 500px;
+  position: relative;
+
+  .hero-container{
+    box-sizing: border-box;
+    position: absolute;
+    box-sizing: border-box;
+    bottom: 30px;
+    padding: 76px 24px 8px;
+    background: rgba( $color-light, .4 );
+    width: calc( 100% - 20px );
+    left: 10px;
+  }
+  @media (min-width: 512px){
+    .hero-container{
+      max-width: 440px;
+      left: $base-offsetX;
+    }
+  }
+
+
+  & p{
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 100%;
+    margin: 4px 0;
+  }
+  .p-nome{
+    font-size: 22px;
+    font-weight: 100;
+  }
+  .p-titulo{
+    text-transform: lowercase;
+  }
+  .p-titulo,
+  .p-cmv{
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  @media (min-width: 512px){
+    p{
+      text-align: left;
+    }
+    .p-nome{
+      font-size: 34px;
+    }
+    .p-titulo,
+    .p-cmv{
+      font-size: 18px;
+    }    
+  }
+}

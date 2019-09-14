@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css?family=Mali:200,300,400,500,600|Montserrat:200,300,400,500,600&display=swap');
+
+
+/*
+  Variables
+*/
+$color-dark: hsla(33, 26%, 8%, 1);
+$color-primary: hsla(35, 42%, 29%, 1);
+$color-secondary: hsla(39, 37%, 63%, 1);
+$color-tertiary: hsla(47, 36%, 74%, 1);
+$color-action1: hsla(96, 42%, 40%, 1);
+$color-action2: hsla(99, 47%, 47%, 1);
+$color-light: hsla(43, 24%, 94%, 1);
+$color-shade: hsla(0, 50%, 0%, .3);
+
+$font-curs: 'Mali', cursive;
+$font-sans: 'Montserrat', sans-serif;
+
+$base-path: "/20190623_WebsiteFrontEnd";
+// $base-path: "";
+
+$base-offsetX: calc( 40px + ( 100vw - 360px ) * 0.1 );
+
+/*
+  Reset
+*/
+body{
+  font-family: $font-sans;
+  background-attachment: fixed;
+  background-color: darken( lightgrey, 40%);
+  background-image: url("../images/retriever.png");
+  background-size: cover;
+  background-position: top 72px right 0;
+  background-repeat: no-repeat;
+  transition: background-position 0.21s;
+}
+
+@media (max-width:692px){
+  body{
+    background-size: contain;
+    background-position: top 130px right 0;
+    background-size: 150%;
+  }
+body.collapsed{
+  background-position: top 40px right 0;
+}
+
+}
+
+
+/*
+  Layout
+*/
+html,
+body{
+  scroll-behavior: smooth;
+}
+
+/*
+  Style
+*/
+// #root{
+//   position: relative;
+//   overflow: hidden;
+// }
+
+section{
+  position: relative;
+}

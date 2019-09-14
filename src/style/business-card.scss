@@ -1,0 +1,44 @@
+@import "main.scss";
+
+.business-card{
+    box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 76px 24px 8px;
+    background: rgba( $color-light, .4 );
+    width: calc( 100% - 20px );
+    
+    p{
+        text-transform: uppercase;
+        text-align: center;
+        line-height: 100%;
+        margin: 4px 0;
+    }
+    .p-nome{
+      font-size: 22px;
+      font-weight: 100;
+    }
+    .p-titulo{
+      text-transform: lowercase;
+    }
+    .p-titulo,
+    .p-cmv{
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    @media (min-width: 578px){
+        &{
+            max-width: 440px;
+        }
+        p{
+          text-align: left;
+        }
+        .p-nome{
+          font-size: 34px;
+        }
+        .p-titulo,
+        .p-cmv{
+          font-size: 18px;
+        }    
+      }
+}
