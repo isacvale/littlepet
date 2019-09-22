@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css?family=Mali:200,300,400,500,600|Montserrat:200,300,400,500,600&display=swap');
+
+/*
+  Variables
+*/
+:root{
+  --color-dark: hsla(33, 26%, 8%, 1);
+  --color-primary: hsla(35, 42%, 29%, 1);
+  --color-secondary: hsla(39, 37%, 63%, 1);
+  --color-tertiary: hsla(47, 36%, 74%, 1);
+  --color-action1: hsla(96, 42%, 40%, 1);
+  --color-action2: hsla(99, 47%, 47%, 1);
+  --color-light: hsla(43, 24%, 94%, 1);
+  --color-shade: hsla(0, 50%, 0%, .3);
+
+  --font-curs: 'Mali', cursive;
+  --font-sans: 'Montserrat',
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Roboto",
+    "Oxygen",
+    "Ubuntu",
+    "Cantarell",
+    "Fira Sans",
+    "Droid Sans",
+    "Helvetica Neue",
+    sans-serif;
+
+
+  font-size: 16px;
+}
+/* Ah ha! */
+/*
+  Reset
+*/
+body{
+  font-family: var(--font-sans);
+  margin: 0;
+}
+
+*{
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+  Animations
+*/
+@keyframes beatHeart {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(1.05);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

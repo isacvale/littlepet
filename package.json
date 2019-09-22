@@ -4,10 +4,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@dvo/raven": "^2.0.0",
     "celo": ">=1.1.4",
     "node-sass": "^4.12.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.1",
     "scrollback": "^1.0.0",
     "serve": "^11.0.1"

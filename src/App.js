@@ -1,11 +1,14 @@
-import React from 'react';
-import './App.css';
-import {Header} from './components/header'
-import {Hero} from './components/hero'
-import {Maincontent} from './components/maincontent'
-import {Footer} from './components/footer'
-// import setUpEV from './event-listeners'
+import React from 'react'
 
+import { BrowserRouter as Router, Route } from 'react-router-dom'
+import { Landing, System } from './pages'
+
+// import {Header} from './components/header'
+// import {Hero} from './components/hero'
+// import {Maincontent} from './components/maincontent'
+// import {Footer} from './components/footer'
+
+// import setUpEV from './event-listeners'
 
 
 class App extends React.Component{
@@ -18,12 +21,14 @@ class App extends React.Component{
   }
   render(){
     return (
-    <div>
-      <Header />
-      <Hero />
-      <Maincontent />
-      <Footer />
-    </div>
+      <Router>
+        <Route path="/" exact component={Landing} />
+        <Route path="/clinic/" exact component={System} />
+      </Router>
+      // {/* <Header />
+      // <Hero />
+      // <Maincontent />
+      // <Footer /> */}
   )}
 }
 
